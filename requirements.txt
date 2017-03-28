@@ -1,0 +1,2 @@
+simple-salesforce==0.72.2
+sodapy==1.4.3
