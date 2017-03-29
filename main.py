@@ -2,6 +2,7 @@ from flask import Flask, request, redirect
 from datetime import datetime
 import twilio.twiml
 import os, requests, json, urllib
+import geocode
 
 app = Flask(__name__)
 
@@ -14,8 +15,15 @@ def initial():
     body = request.values.get('Body')
     print(body)
 
-    # set a default message
-    resp.message("Thanks for texting!")
+    # send it to the geocoder
+    located = geocode.best_parcel_match(body)
+    print(located)
+
+    # default messages for valid or invalid addresses
+    if located:
+    	resp.message("List of properties nearby {} scheduled to be demolished in the next few days. Subscribe to get future alerts for this address.".format(located['address']))
+    else:
+    	resp.message("To receive notices about demolitions happening nearby, please text us a street address (eg '123 Woodward').")
 
     return str(resp)
 
