@@ -25,8 +25,10 @@ pip install -r requirements.txt
 
 Copy `sample.env` to `.env` and add your secrets. (We have [autoenv](https://github.com/kennethreitz/autoenv) installed to auto-execute this file.)
 
-1. Run `python main.py` to start the server
-2. Download [ngrok](https://ngrok.com/). In another terminal tab, change directories to your unzipped download and run `./ngrok http <your-port-number>` to forward the server to `<some-subdomain>.ngrok.io`
-3. Login to Twilio. Go to Console > Phone Numbers > Messaging. Set Messaging to "Configure with Webhooks/TwiML" and "A Message Comes In" to your ngrok webhook
+Run `python main.py` to start the server.
+
+Download [ngrok](https://ngrok.com/). In another terminal tab, change directories to your unzipped download and run `./ngrok http <your-port-number>` to forward the server to `<some-subdomain>.ngrok.io`.
+
+Login to Twilio. Go to Console > Phone Numbers > Messaging. Set Messaging to "Configure with Webhooks/TwiML" and "A Message Comes In" to your ngrok webhook.
 
 Now, just text your number to trigger the Express app.
