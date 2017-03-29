@@ -11,7 +11,7 @@ From Salesforce, we get:
 
 After geocoding the address, we make a Socrata dataset from this, with an additional location field.
 
-## development
+## install
 
 Requires Python 3.6
 
@@ -21,7 +21,9 @@ cd demo-alerts
 pip install -r requirements.txt
 ```
 
-Copy `sample.env` to `.env` and add your secrets. Install [autoenv](https://github.com/kennethreitz/autoenv) to auto-execute this file.
+## development
+
+Copy `sample.env` to `.env` and add your secrets. (We have [autoenv](https://github.com/kennethreitz/autoenv) installed to auto-execute this file.)
 
 1. Run `python main.py` to start the server
 2. Download [ngrok](https://ngrok.com/). In another terminal tab, change directories to your unzipped download and run `./ngrok http <your-port-number>` to forward the server to `<some-subdomain>.ngrok.io`
