@@ -18,21 +18,32 @@ def initial():
     body = request.values.get('Body')
     print(body)
 
-    # send it to the geocoder
+    # send it to the geocoder, returns a dict
     located = geocode.best_parcel_match(body)
     print(located)
 
     # if it's a valid address, check if it has demos nearby 
     if located:
-        lat = located['coords'][0]
-        lng = located['coords'][1]
-        demos = soda_client.get("q48r-nkgw", where="within_circle(location, {}, {}, 155)".format(lat, lng))
+        lat = located['coords'][1]
+        lng = located['coords'][0]
+        print(lat, lng)
+
+        # query against socrata dataset, returns an array
+        # eventually, add time query here too??
+        demos = soda_client.get("8wnn-qcxj", where="within_circle(location, {}, {}, 155)".format(lat, lng))
         print(demos)
 
+        # if there's demos nearby, make a list of addresses and dates to add to the message
         if len(demos) > 0:
-            resp.message("Demos scheduled near {}: {}.".format(located['address'], demos))
+            list_demos = []
+            for d in demos:
+                formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
+                list_demos.append(formatted_demo)
+            
+            resp.message("{} demos sheduled near {} in the next 5 days: \n{}. \nDates subject to change.".format(len(demos), located['address'], list_demos))
         else:
-            resp.message("No demos scheduled near {} in the next 5 days. Text 'Y' to subscribe to future demo alerts near this address.".format(located['address']))
+            resp.message("No demos scheduled near {} in the next 5 days. Text 'ADD' to subscribe to future demo alerts near this address.".format(located['address']))
+    
     # default message for a bad address
     else:
         resp.message("To receive notices about demolitions happening nearby, please text us a street address (eg '123 Woodward').")
