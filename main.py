@@ -40,7 +40,7 @@ def initial():
                 formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
                 list_demos.append(formatted_demo)
             
-            resp.message("{} demos sheduled near {} in the next 5 days: \n{}. \nDates subject to change.".format(len(demos), located['address'], list_demos))
+            resp.message("{} demo(s) sheduled near {} in the next 5 days: \n{}. \nDates subject to change.".format(len(demos), located['address'], (";\n").join(list_demos)))
         else:
             resp.message("No demos scheduled near {} in the next 5 days. Text 'ADD' to subscribe to future demo alerts near this address.".format(located['address']))
     

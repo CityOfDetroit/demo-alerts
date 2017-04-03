@@ -100,6 +100,7 @@ def best_parcel_match(input):
     It will first try to find an address point
     If there no match, picks from best street centerline candidates.
     """
+    print("Geocoding...")
     point_match = address(input)
     street_match = address(input, point=False)
     if point_match:
