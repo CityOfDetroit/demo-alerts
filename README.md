@@ -21,6 +21,17 @@ cd demo-alerts
 pip install -r requirements.txt
 ```
 
+smartsheet cell.py:
+
+```
+@value.setter
+def value(self, value):
+    if isinstance(value, six.string_types) or value is True:
+        self._value = value
+    else:
+        self._value = False
+```
+
 ## development
 
 Copy `sample.env` to `.env` and add your secrets. (We have [autoenv](https://github.com/kennethreitz/autoenv) installed to auto-execute this file.)
