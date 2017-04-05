@@ -26,7 +26,6 @@ def initial():
     print(caller)
     # get body of incoming SMS
     body = request.values.get('Body')
-<<<<<<< HEAD
     if body.upper() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
         resp.message("You've subscribed to demolition alerts near {}. Text 'END' to unsubscribe from your alerts.".format(caller.last_requested_address))
@@ -56,7 +55,7 @@ def initial():
             if len(demos) > 0:
                 list_demos = []
                 for d in demos:
-                    formatted_demo = "{} on {}".format(d['address'][:-7], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
+                    formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
                     list_demos.append(formatted_demo)
 
                 resp.message("{} demos scheduled near {} in the next 5 days: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), located['address'], list_demos))
