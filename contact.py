@@ -13,6 +13,7 @@ class Contact(object):
         self.number = phone
         self.subscriber = False
         self.addresses = []
+        self.last_requested_address = None
         for r in SS.rows:
             if r.cells[COLS['Phone Number'][0]].display_value == phone:
                 self.subscriber = True

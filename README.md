@@ -23,13 +23,15 @@ pip install -r requirements.txt
 
 smartsheet cell.py:
 
+Setting `checkbox` values will fail unless you change cell.py like so:
+
+https://github.com/smartsheet-platform/smartsheet-python-sdk/issues/38
+
 ```
 @value.setter
 def value(self, value):
-    if isinstance(value, six.string_types) or value is True:
+    if isinstance(value, (six.string_types, six.integer_types, float, bool)):
         self._value = value
-    else:
-        self._value = False
 ```
 
 ## development
