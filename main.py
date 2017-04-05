@@ -44,21 +44,21 @@ def initial():
         if located:
             lat = located['location']['y']
             lng = located['location']['x']
-            print(lat, lng)
+            # print(lat, lng)
 
             # query against socrata dataset, returns an array
             # eventually, add time query here too??
             demos = soda_client.get("8wnn-qcxj", where="within_circle(location, {}, {}, 155)".format(lat, lng))
             print(demos)
 
-            # if there's demos nearby, make a list of addresses and dates to add to the message
+            # if demos nearby, make a list of addresses and dates to add to the message
             if len(demos) > 0:
                 list_demos = []
                 for d in demos:
                     formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
                     list_demos.append(formatted_demo)
 
-                resp.message("{} demos scheduled near {} in the next 5 days: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), located['address'], list_demos))
+                resp.message("{} demos scheduled near {} in the next 5 days: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), located['address'], (";\n").join(list_demos)))
                 caller.last_requested_address = located['address'][:-7]
                 users[incoming_number] = caller
             else:
