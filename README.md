@@ -21,6 +21,19 @@ cd demo-alerts
 pip install -r requirements.txt
 ```
 
+smartsheet cell.py:
+
+Setting `checkbox` values will fail unless you change cell.py like so:
+
+https://github.com/smartsheet-platform/smartsheet-python-sdk/issues/38
+
+```
+@value.setter
+def value(self, value):
+    if isinstance(value, (six.string_types, six.integer_types, float, bool)):
+        self._value = value
+```
+
 ## development
 
 Copy `sample.env` to `.env` and add your secrets. (We have [autoenv](https://github.com/kennethreitz/autoenv) installed to auto-execute this file.)
