@@ -26,6 +26,7 @@ def initial():
     print(caller)
     # get body of incoming SMS
     body = request.values.get('Body')
+<<<<<<< HEAD
     if body.upper() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
         resp.message("You've subscribed to demolition alerts near {}. Text 'END' to unsubscribe from your alerts.".format(caller.last_requested_address))
