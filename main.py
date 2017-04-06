@@ -1,12 +1,9 @@
 from flask import Flask, request, redirect
-from datetime import datetime
-from sodapy import Socrata
 import twilio.twiml
 import os, requests, json, urllib
 from geocoder import Geocoder
 import contact
-
-soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
+import message
 
 app = Flask(__name__)
 
@@ -16,7 +13,10 @@ users = {}
 def initial():
     """Respond to incoming calls with a simple text message."""
 
+    # define the twilio response
     resp = twilio.twiml.Response()
+    
+    # get sender phone number, check if they are a current subscriber
     incoming_number = request.values.get('From')[2:]
     if incoming_number in users.keys():
         caller = users[incoming_number]
@@ -24,52 +24,50 @@ def initial():
     else:
         caller = contact.Contact(incoming_number)
     print(caller)
+
     # get body of incoming SMS
     body = request.values.get('Body')
+
+    # check if the body is 'add' or 'remove' or anything else 
     if body.upper() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
-        resp.message("You've subscribed to demolition alerts near {}. Text 'END' to unsubscribe from your alerts.".format(caller.last_requested_address))
+        
+        msg = message.SubscribeMsg(caller.last_requested_address)
+        success_msg = msg.make_msg(msg.addr)
+        resp.message(success_msg)
+
         # remove from users so we grab a 'fresh' copy of the user with sheet rows
         del users[incoming_number]
         return str(resp)
-    if body.upper() == 'END':
-        # handle unsub here
-        pass
+   
+    elif body.upper() == 'REMOVE':
+        for address in caller.addresses:
+            caller.unwatch(address)
+        
+        msg = message.UnsubscribeMsg([a[0] for a in caller.addresses])
+        remove_msg = msg.make_msg(msg.addrs)
+        resp.message(remove_msg)
+
     else:
         # send it to the geocoder
         located = Geocoder().geocode(body)
         print(located)
 
-        # if it's a valid address, check if it has demos nearby
+        # if it's a valid address, build up a text message with demos nearby
         if located:
-            lat = located['location']['y']
-            lng = located['location']['x']
-            # print(lat, lng)
+            msg = message.DemoMsg(located)
+            demo_msg = msg.make_msg(msg.addr)
+            resp.message(demo_msg)
 
-            # query against socrata dataset, returns an array
-            # eventually, add time query here too??
-            demos = soda_client.get("8wnn-qcxj", where="within_circle(location, {}, {}, 155)".format(lat, lng))
-            print(demos)
-
-            # if demos nearby, make a list of addresses and dates to add to the message
-            if len(demos) > 0:
-                list_demos = []
-                for d in demos:
-                    formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
-                    list_demos.append(formatted_demo)
-
-                resp.message("{} demos scheduled near {} in the next 5 days: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), located['address'], (";\n").join(list_demos)))
-                caller.last_requested_address = located['address'][:-7]
-                users[incoming_number] = caller
-            else:
-                resp.message("No demos scheduled near {} in the next 5 days. Text 'ADD' to subscribe to future demo alerts near this address.".format(located['address']))
-                caller.last_requested_address = located['address'][:-7]
-                users[incoming_number] = caller
+            caller.last_requested_address = located['address'][:-7]
+            users[incoming_number] = caller
 
         # default message for a bad address
         else:
-            resp.message("To receive notices about demolitions happening nearby, please text us a street address (eg '123 Woodward').")
+            default_msg = message.DefaultMsg().make_msg()
+            resp.message(default_msg)
 
+    # send the text 
     return str(resp)
 
 if __name__ == "__main__":
