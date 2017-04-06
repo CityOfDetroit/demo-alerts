@@ -49,16 +49,17 @@ def initial():
 
         # if it's a valid address, check if it has demos nearby
         if located:
-            demo_msg = message.Message(located)
-            print(demo_msg)
+            msg = message.Message(located)
+            demo_msg = msg.make_demo_msg(msg.addr)
+            resp.message(demo_msg)
 
             # todo: figure out how to deal with this based on message returned (1+ or 0 demos nearby soon)
-            if demo_msg:
-                caller.last_requested_address = located['address'][:-7]
-                users[incoming_number] = caller
-            else:
-                caller.last_requested_address = located['address'][:-7]
-                users[incoming_number] = caller
+            # if demo_msg:
+            #     caller.last_requested_address = located['address'][:-7]
+            #     users[incoming_number] = caller
+            # else:
+            #     caller.last_requested_address = located['address'][:-7]
+            #     users[incoming_number] = caller
 
         # default message for a bad address
         else:

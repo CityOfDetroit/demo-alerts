@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from sodapy import Socrata
 
@@ -26,6 +27,6 @@ class Message(object):
                 formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
                 list_demos.append(formatted_demo)
 
-            return resp.message("{} demos scheduled near {} in the next 5 days: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), addr['address'], (";\n").join(list_demos))) 
+            return "{} demos scheduled near {} in the next 5 days: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), addr['address'], (";\n").join(list_demos))
         else:
-            return resp.message("No demos scheduled near {} in the next 5 days. Text 'ADD' to subscribe to future demo alerts near this address.".format(addr['address']))
+            return "No demos scheduled near {} in the next 5 days. Text 'ADD' to subscribe to future demo alerts near this address.".format(addr['address'])
