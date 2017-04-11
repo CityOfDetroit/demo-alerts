@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect
-import twilio.twiml
+from twilio.twiml.messaging_response import MessagingResponse
 import os, requests, json, urllib
 from geocoder import Geocoder
 import contact
@@ -13,8 +13,8 @@ users = {}
 def initial():
     """Respond to incoming calls with a simple text message."""
 
-    # define the twilio response
-    resp = twilio.twiml.Response()
+    # define the twilio response, ref https://twilio.github.io/twilio-python/6.0.0/twiml/messaging_response.m.html
+    resp = MessagingResponse()
     
     # get sender phone number, check if they are a current subscriber
     incoming_number = request.values.get('From')[2:]

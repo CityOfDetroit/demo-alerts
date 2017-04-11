@@ -8,7 +8,3 @@ message = client.messages.create(to="+17345566915",
 	                             body="I'm a demo alert!")
 
 print(message.sid)
-
-# I had to `pip uninstall twilio` 5.7.0 and `pip install twilio` 6.0.0 for `python send_alerts.py` to successfully work
-# `python main.py` only works on 5.7.0 currently (but it seems this version might only be supported thru 7/2017)
-# Specifcally, need to change twilio.twiml.Response() in main.py to migrate to new version
