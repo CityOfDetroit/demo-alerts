@@ -45,3 +45,9 @@ Download [ngrok](https://ngrok.com/). In another terminal tab, change directorie
 Login to Twilio. Go to Console > Phone Numbers > Messaging. Set Messaging to "Configure with Webhooks/TwiML" and "A Message Comes In" to your ngrok webhook.
 
 Now, just text your number to trigger the Express app.
+
+## send the alerts
+
+First, `pip install twilio==6.0.0` if currently using twilio 5.7.0
+
+Then, `python send_alerts.py`. That's it, alerts sent! 
