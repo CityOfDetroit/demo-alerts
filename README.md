@@ -48,6 +48,6 @@ Now, just text your number to trigger the Express app.
 
 ## send the alerts
 
-First, `pip install twilio==6.0.0` if currently using twilio 5.7.0
+Once a day, we want to send our active subsribers a notice if there are demos scheduled nearby them in the next couple of days.
 
-Then, `python send_alerts.py`. That's it, alerts sent! 
+We'll eventually schedule this, but for now just run: `python send_alerts.py`
