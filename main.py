@@ -51,10 +51,10 @@ def initial():
     else:
         # send it to the geocoder
         located = Geocoder().geocode(body)
-        print(located)
 
         # if it's a valid address, build up a text message with demos nearby
         if located:
+            print("Geocode match:", located['address'])
             msg = message.DemoMsg(located)
             demo_msg = msg.make_msg(msg.addr)
             resp.message(demo_msg)
