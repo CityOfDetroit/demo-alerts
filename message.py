@@ -24,11 +24,21 @@ class DemoMsg(object):
         print("Demos this wk:", len(demos))
 
         # format demos
+        list_demos = []
         if len(demos) > 0:
-            list_demos = []
             for d in demos:
                 formatted_demo = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
                 list_demos.append(formatted_demo)
+
+        # query for scheduled demos within 500ft beyond one week (these aren't included in pipeline dataset, so get them separately for now)
+        demos_nearby = soda_client.get("tsqq-qtet", where="demolish_by_date>='{}' AND within_circle(location, {}, {}, 155)".format(end_of_week_str, lat, lng))
+        print("Demos nearby:", len(demos_nearby))
+
+        list_demos_nearby = []
+        if len(demos_nearby) > 0:
+            for d in demos_nearby:
+                formatted_demo_nearby = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
+                list_demos_nearby.append(formatted_demo_nearby)
 
         # query for properties within 500ft in the demo pipeline
         # https://data.detroitmi.gov/Property-Parcels/Demolition_Pipeline/dyp9-69zf/data
@@ -36,24 +46,26 @@ class DemoMsg(object):
         print("Pipeline properties:", len(pipeline))
 
         # format pipeline properties
+        list_pipeline = []
         if len(pipeline) > 0:
-            list_pipeline = []
             for p in pipeline:
                 formatted_pipeline = "{}".format(p['address'])
                 list_pipeline.append(formatted_pipeline)
 
+        full_pipeline = list_demos_nearby + list_pipeline
+
         # build the text msgs
-        if len(demos) > 0 & len(pipeline) < 1:
-            return "{} demos scheduled near {} this week: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address.".format(len(demos), addr['address'][:-7], (";\n").join(list_demos))
+        if len(demos) > 0 & len(full_pipeline) < 1:
+            return "Demolitions are scheduled near {} this week: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near address.".format(addr['address'][:-7], (";\n").join(list_demos))
 
-        elif len(demos) < 1 & len(pipeline) > 0:
-            return "No demos scheduled near {} this week. Nearby properties are in the pipeline and projected for demo within a year: \n{}. \nText 'ADD' to subscribe to future demo alerts near this address.".format(addr['address'][:-7], (";\n").join(list_pipeline))
+        elif len(full_pipeline) > 0 & len(demos) < 1:
+            return "Properties nearby {} are in the demolition pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(full_pipeline))
 
-        elif len(demos) > 0 & len(pipeline) > 0:
-            return "{} demos scheduled near {} this week: \n{}. \nAdditional nearby properties are in pipeline and projected for demo within a year: \n{}. \nDates subject to change. Text 'ADD' to subscribe to future demo alerts near this address."
-        
+        elif len(demos) > 0 & len(full_pipeline) > 0:
+            return "Demolitions are scheduled near {} this week: \n{}. \nAdditional properties nearby are in the pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos), (";\n").join(full_pipeline))
+
         else: 
-            return "No properties near {} are currently scheduled to be demolished or in the pipeline. Text 'ADD' to subscribe to future demo alerts near this address.".format(addr['address'][:-7])
+            return "No properties near {} are currently in the demolition pipeline or scheduled to be knocked-down. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7])
 
 class SubscribeMsg(object):
     def __init__(self, lastRequestedAddress):
@@ -61,7 +73,7 @@ class SubscribeMsg(object):
 
     def make_msg(self, addr):
         """Confirm subscription to the address you last texted"""
-        return "You've subscribed to demolition alerts near {}. Text 'REMOVE' to unsubscribe from your alerts.".format(addr)
+        return "You've subscribed to demolition alerts near {}. You'll receive a text one week prior to any scheduled knock-downs within 500ft. Text 'REMOVE' to unsubscribe.".format(addr)
 
 class UnsubscribeMsg(object):
     def __init__(self, activeAddresses):
@@ -69,7 +81,7 @@ class UnsubscribeMsg(object):
 
     def make_msg(self, addrs):
         """Unsubscribe from all active addresses"""
-        return "You're unsubscribed to demolition alerts near: \n{}. \nText a street address to find demos nearby or to resubscribe.".format((";\n").join(addrs))
+        return "You're unsubscribed to demolition alerts near: \n{}. \nText a street address to find demos nearby or to re-subscribe.".format((";\n").join(addrs))
  
 class DefaultMsg(object):
     def __init__(self):
