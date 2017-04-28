@@ -20,10 +20,10 @@ def initial():
     incoming_number = request.values.get('From')[2:]
     if incoming_number in users.keys():
         caller = users[incoming_number]
-        print(caller.last_requested_address)
+        # print(caller.last_requested_address)
     else:
         caller = contact.Contact(incoming_number)
-    print(caller)
+        # print(caller)
 
     # get body of incoming SMS
     body = request.values.get('Body')

@@ -17,22 +17,20 @@ class DemoMsg(object):
         today = datetime.now()
         end_of_week = today + timedelta(days=7)
         end_of_week_str = end_of_week.strftime('%Y-%m-%d')
+        print(end_of_week_str)
 
-        # query for scheduled demos within 500ft (155m) this week
-        # https://data.detroitmi.gov/Government/Upcoming-Detroit-Demolitions/tsqq-qtet/data
-        demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(end_of_week_str, lat, lng))
-        print("Demos this wk:", len(demos))
-
-        # format demos
-        list_demos = []
-        if len(demos) > 0:
-            for d in demos:
-                formatted_demo = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
-                list_demos.append(formatted_demo)
-
-        # query for scheduled demos within 500ft beyond one week (these aren't included in pipeline dataset, so get them separately for now)
+        # query Socrata datasets
+        demos_soon = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(end_of_week_str, lat, lng))
         demos_nearby = soda_client.get("tsqq-qtet", where="demolish_by_date>='{}' AND within_circle(location, {}, {}, 155)".format(end_of_week_str, lat, lng))
-        print("Demos nearby:", len(demos_nearby))
+        pipeline = soda_client.get("dyp9-69zf", where="within_circle(location, {}, {}, 155)".format(lat, lng))
+        print("Demos this wk:", len(demos_soon))
+
+        # format query results as formatted lists for text msgs
+        list_demos_soon = []
+        if len(demos_soon) > 0:
+            for d in demos_soon:
+                formatted_demo_soon = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
+                list_demos_soon.append(formatted_demo_soon)
 
         list_demos_nearby = []
         if len(demos_nearby) > 0:
@@ -40,29 +38,25 @@ class DemoMsg(object):
                 formatted_demo_nearby = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
                 list_demos_nearby.append(formatted_demo_nearby)
 
-        # query for properties within 500ft in the demo pipeline
-        # https://data.detroitmi.gov/Property-Parcels/Demolition_Pipeline/dyp9-69zf/data
-        pipeline = soda_client.get("dyp9-69zf", where="within_circle(location, {}, {}, 155)".format(lat, lng))
-        print("Pipeline properties:", len(pipeline))
-
-        # format pipeline properties
         list_pipeline = []
         if len(pipeline) > 0:
             for p in pipeline:
                 formatted_pipeline = "{}".format(p['address'])
                 list_pipeline.append(formatted_pipeline)
 
+        # concat demos nearby beyond one week and pipeline
         full_pipeline = list_demos_nearby + list_pipeline
+        print("Pipeline properties:", len(full_pipeline))
 
         # build the text msgs
-        if len(demos) > 0 & len(full_pipeline) < 1:
-            return "Demolitions are scheduled near {} this week: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near address.".format(addr['address'][:-7], (";\n").join(list_demos))
+        if len(demos_soon) > 0 & len(full_pipeline) < 1:
+            return "Demolitions are scheduled near {} this week: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos_soon))
 
-        elif len(full_pipeline) > 0 & len(demos) < 1:
+        elif len(full_pipeline) > 0 & len(demos_soon) < 1:
             return "Properties nearby {} are in the demolition pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(full_pipeline))
 
-        elif len(demos) > 0 & len(full_pipeline) > 0:
-            return "Demolitions are scheduled near {} this week: \n{}. \nAdditional properties nearby are in the pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos), (";\n").join(full_pipeline))
+        elif len(demos_soon) > 0 & len(full_pipeline) > 0:
+            return "Demolitions are scheduled near {} this week: \n{}. \nAdditional properties nearby are in the pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline))
 
         else: 
             return "No properties near {} are currently in the demolition pipeline or scheduled to be knocked-down. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7])
