@@ -17,7 +17,6 @@ class DemoMsg(object):
         today = datetime.now()
         end_of_week = today + timedelta(days=7)
         end_of_week_str = end_of_week.strftime('%Y-%m-%d')
-        print(end_of_week_str)
 
         # query Socrata datasets
         demos_soon = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(end_of_week_str, lat, lng))
@@ -49,13 +48,13 @@ class DemoMsg(object):
         print("Pipeline properties:", len(full_pipeline))
 
         # build the text msgs
-        if len(demos_soon) > 0 & len(full_pipeline) < 1:
+        if len(demos_soon) > 0 and len(full_pipeline) < 1:
             return "Demolitions are scheduled near {} this week: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos_soon))
 
-        elif len(full_pipeline) > 0 & len(demos_soon) < 1:
+        elif len(full_pipeline) > 0 and len(demos_soon) < 1:
             return "Properties nearby {} are in the demolition pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(full_pipeline))
 
-        elif len(demos_soon) > 0 & len(full_pipeline) > 0:
+        elif len(demos_soon) > 0 and len(full_pipeline) > 0:
             return "Demolitions are scheduled near {} this week: \n{}. \nAdditional properties nearby are in the pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline))
 
         else: 
