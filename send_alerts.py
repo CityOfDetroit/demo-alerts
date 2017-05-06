@@ -2,7 +2,7 @@ import os
 from twilio.rest import Client
 from sodapy import Socrata
 from smartsheet import Smartsheet
-from datetime import datetime
+from datetime import datetime, timedelta
 
 smartsheet = Smartsheet(os.environ['SMARTSHEET_API_TOKEN'])
 subscriber_sheet_id = 6624424314070916
@@ -19,7 +19,8 @@ alerts_sent = 0
 # make a list of active subscribers, where each element is a dict with subscriber address, lat, lng, phone and list of demos nearby
 active_subscribers = []
 for r in SS.rows:
-    if r.cells[COLS['Active'][0]].value == True:
+    # todo: figure out how to fix this, should set as col Active to True/checked
+    if r.cells[COLS['Phone Number'][0]].value == '7345566915':
         subscriber = {
             "address": r.cells[COLS['Matched Address'][0]].display_value,
             "lng": r.cells[COLS['LatLng'][0]].display_value.strip("()")[:-10],
@@ -29,23 +30,28 @@ for r in SS.rows:
         }
         active_subscribers.append(subscriber)
 
-# find demos nearby active subscribers addresses
+# calculate three days from now
+today = datetime.now()
+three_days = today + timedelta(days=3)
+three_days_str = three_days.strftime('%Y-%m-%d')
+
+# find demos nearby active subscribers addresses scheduled for knock-down in the next three days
 for i in active_subscribers:
-    # query socrata, populate demos_nearby
-    demos = soda_client.get("8wnn-qcxj", where="within_circle(location, {}, {}, 155)".format(float(i['lat']), float(i['lng'])))
+    # query socrata, populate subscriber[demos_nearby]
+    demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
     i['demos_nearby'].extend(demos)
 
     # if an active subscriber is near demos, send them an alert
-    if (len(i['demos_nearby']) > 1):
+    if len(i['demos_nearby']) > 0:
         # format list of demos nearby
         list_demos = []
         for d in i['demos_nearby']:
-            formatted_demo = "{} on {}".format(d['address'], datetime.fromtimestamp(int(d['demo_date'])).strftime('%m-%d-%Y'))
+            formatted_demo = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
             list_demos.append(formatted_demo)
 
         # setup the message 
         send_to = "+1" + i['phone']
-        send_body = "Notice: {} demos scheduled nearby {} in the next 5 days: \n{}. \nDates subject to change. Text 'REMOVE' to unsubscribe.".format(len(i['demos_nearby']), i['address'], (";\n").join(list_demos))
+        send_body = "Notice: Demolitions are scheduled nearby {}: \n{}. \nDates subject to change. Text 'REMOVE' to unsubscribe.".format(i['address'], (";\n").join(list_demos))
 
         # send the alert, increment our count
         message = client.messages.create(to=send_to,from_="+13132283610",body=send_body)
