@@ -5,7 +5,7 @@ from smartsheet import Smartsheet
 from datetime import datetime, timedelta
 
 smartsheet = Smartsheet(os.environ['SMARTSHEET_API_TOKEN'])
-subscriber_sheet_id = 6624424314070916
+subscriber_sheet_id = 1734039796246404
 SS = smartsheet.Sheets.get_sheet(subscriber_sheet_id)
 COLS = { c.title: (c.index, c.id) for c in SS.columns }
 
@@ -19,8 +19,7 @@ alerts_sent = 0
 # make a list of active subscribers, where each element is a dict with subscriber address, lat, lng, phone and list of demos nearby
 active_subscribers = []
 for r in SS.rows:
-    # todo: figure out how to fix this, should set as col Active to True/checked
-    if r.cells[COLS['Phone Number'][0]].value == '7345566915':
+    if r.cells[COLS['Active'][0]].value == "Yes":
         subscriber = {
             "address": r.cells[COLS['Matched Address'][0]].display_value,
             "lng": r.cells[COLS['LatLng'][0]].display_value.strip("()")[:-10],
@@ -37,7 +36,7 @@ three_days_str = three_days.strftime('%Y-%m-%d')
 
 # find demos nearby active subscribers addresses scheduled for knock-down in the next three days
 for i in active_subscribers:
-    # query socrata, populate subscriber[demos_nearby]
+    # query socrata, populate subscriber[demos_nearby] with result
     demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
     i['demos_nearby'].extend(demos)
 

@@ -29,7 +29,7 @@ def initial():
     body = request.values.get('Body')
 
     # check if the body is 'add' or 'remove' or anything else 
-    if body.upper() == 'ADD' and caller.last_requested_address:
+    if body.upper().strip() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
         
         msg = message.SubscribeMsg(caller.last_requested_address)
@@ -40,7 +40,7 @@ def initial():
         del users[incoming_number]
         return str(resp)
    
-    elif body.upper() == 'REMOVE':
+    elif body.upper().strip() == 'REMOVE':
         for address in caller.addresses:
             caller.unwatch(address)
         
