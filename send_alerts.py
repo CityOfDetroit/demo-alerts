@@ -50,7 +50,7 @@ for i in active_subscribers:
 
         # setup the message 
         send_to = "+1" + i['phone']
-        send_body = "Notice: {} demos scheduled nearby {}: \n{}. \nDates subject to change. Text 'REMOVE' to unsubscribe.".format(len(i['demos_nearby']), i['address'], (";\n").join(list_demos))
+        send_body = "Notice: {} demos scheduled nearby {}: \n{}. \nDates subject to change. Protect your family against health risks during demolition by keeping windows and doors closed and children and pets inside. Text 'REMOVE' to unsubscribe.".format(len(i['demos_nearby']), i['address'], (";\n").join(list_demos))
 
         # send the alert, increment our count
         message = client.messages.create(to=send_to,from_="+13132283610",body=send_body)
