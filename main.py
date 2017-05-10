@@ -20,32 +20,34 @@ def initial():
     incoming_number = request.values.get('From')[2:]
     if incoming_number in users.keys():
         caller = users[incoming_number]
-        # print(caller.last_requested_address)
+        
     else:
         caller = contact.Contact(incoming_number)
-        # print(caller)
 
     # get body of incoming SMS
     body = request.values.get('Body')
 
-    # check if the body is 'add' or 'remove' or anything else 
-    if body.upper().strip() == 'ADD' and caller.last_requested_address:
+    # check if the body is 'HEALTH', 'ADD', 'REMOVE' or anything else 
+    if body.upper().strip() == 'HEALTH':
+        health_msg = message.HealthMsg().make_msg()
+        resp.message(health_msg)
+
+    elif body.upper().strip() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
         
         msg = message.SubscribeMsg(caller.last_requested_address)
-        success_msg = msg.make_msg(msg.addr)
+        success_msg = msg.make_msg()
         resp.message(success_msg)
 
         # remove from users so we grab a 'fresh' copy of the user with sheet rows
         del users[incoming_number]
-        return str(resp)
    
     elif body.upper().strip() == 'REMOVE':
         for address in caller.addresses:
             caller.unwatch(address)
         
         msg = message.UnsubscribeMsg([a[0] for a in caller.addresses])
-        remove_msg = msg.make_msg(msg.addrs)
+        remove_msg = msg.make_msg()
         resp.message(remove_msg)
 
     else:
@@ -57,9 +59,10 @@ def initial():
             print("Geocode match:", located['address'])
             
             msg = message.DemoMsg(located)
-            demo_msg = msg.make_msg(msg.addr)
+            demo_msg = msg.make_msg()
             resp.message(demo_msg)
 
+            # store matched address
             caller.last_requested_address = located['address'][:-7]
             users[incoming_number] = caller
 
