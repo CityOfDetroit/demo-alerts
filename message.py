@@ -49,16 +49,16 @@ class DemoMsg(object):
 
         # build the text msgs
         if len(demos_soon) > 0 and len(full_pipeline) < 1:
-            return "Demolitions are scheduled near {} this week: \n{}. \nDates subject to change. Protect your family against health risks during demolition by keeping windows and doors closed and children and pets inside. Text 'ADD' to get alerts 3 days prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos_soon))
+            return "Demolitions are scheduled near {} this week: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'ADD' for alerts 3 days before demos near here.".format(addr['address'][:-7], (";\n").join(list_demos_soon))
 
         elif len(full_pipeline) > 0 and len(demos_soon) < 1:
-            return "Properties nearby {} are in the demolition pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Protect your family against health risks during demolition by keeping windows and doors closed and children and pets inside. Text 'ADD' to get alerts 3 days prior to demos near this address.".format(addr['address'][:-7], (";\n").join(full_pipeline))
+            return "Demolitions are planned near {} soon: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'ADD' for alerts 3 days before demos near here.".format(addr['address'][:-7], (";\n").join(full_pipeline))
 
         elif len(demos_soon) > 0 and len(full_pipeline) > 0:
-            return "Demolitions are scheduled near {} this week: \n{}. \nAdditional properties nearby are in the pipeline and projected for knock-down within a year: \n{}. \nDates subject to change. Protect your family against health risks during demolition by keeping windows and doors closed and children and pets inside. Text 'ADD' to get alerts 3 days prior to demos near this address.".format(addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline))
+            return "Demolitions are scheduled near {} this week: \n{}. \nMore houses nearby will be demolished soon: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'ADD' for alerts 3 days before demos near here.".format(addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline))
 
         else: 
-            return "No properties near {} are currently in the demolition pipeline or scheduled to be knocked-down. Protect your family against health risks during demolition by keeping windows and doors closed and children and pets inside. Text 'ADD' to get alerts one week prior to demos near this address.".format(addr['address'][:-7])
+            return "No demolitions planned near {}. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'ADD' for alerts 3 days before demos near here.".format(addr['address'][:-7])
 
 class SubscribeMsg(object):
     def __init__(self, lastRequestedAddress):
@@ -66,7 +66,7 @@ class SubscribeMsg(object):
 
     def make_msg(self, addr):
         """Confirm subscription to the address you last texted"""
-        return "You've subscribed to demolition alerts near {}. You'll receive a text 3 days prior to any scheduled knock-downs within 500ft. Protect your family against health risks during demolition by keeping windows and doors closed and children and pets inside. Text 'REMOVE' to unsubscribe.".format(addr)
+        return "You've subscribed to alerts near {}. We'll text you 3 days before any demolitions within 500ft. Text 'REMOVE' to unsubscribe.".format(addr)
 
 class UnsubscribeMsg(object):
     def __init__(self, activeAddresses):
@@ -74,7 +74,7 @@ class UnsubscribeMsg(object):
 
     def make_msg(self, addrs):
         """Unsubscribe from all active addresses"""
-        return "You're unsubscribed to demolition alerts near: \n{}. \nText a street address to find demos nearby or to re-subscribe.".format((";\n").join(addrs))
+        return "You're unsubscribed to alerts near: \n{}. \nText a street address to find demolitions nearby or to re-subscribe.".format((";\n").join(addrs))
  
 class DefaultMsg(object):
     def __init__(self):
@@ -82,4 +82,4 @@ class DefaultMsg(object):
 
     def make_msg(self):
         """Default message for anything you send us besides ADD, END or a valid address"""
-        return "To find properties scheduled for demolition nearby, please text a street address (eg '2 Woodward')."
+        return "To find houses planned for demolition nearby, please text a street address (eg '2 Woodward')."
