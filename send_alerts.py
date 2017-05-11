@@ -1,4 +1,6 @@
 import os
+import json
+import requests
 from twilio.rest import Client
 from sodapy import Socrata
 from smartsheet import Smartsheet
@@ -38,7 +40,9 @@ three_days_str = three_days.strftime('%Y-%m-%d')
 for i in active_subscribers:
     # query socrata, populate subscriber[demos_nearby] with result
     demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
+    
     i['demos_nearby'].extend(demos)
+    # print(i['demos_nearby'])
 
     # if an active subscriber is near demos, send them an alert
     if len(i['demos_nearby']) > 0:
@@ -64,6 +68,26 @@ for i in active_subscribers:
     else:
         pass
 
-# log some basic stats, later we can send these to slack
-print("# active subscribers:",len(active_subscribers))
-print("# alerts sent today:", alerts_sent)
+# store some basic usage metrics and log em to slack every dayh
+daily_counts = "{} demo alerts sent & {} active subscribers".format(alerts_sent, len(active_subscribers))
+print(daily_counts)
+
+webhook_url = os.environ['SLACK_WEBHOOK_URL']
+slack_data = {
+    'text': daily_counts, 
+    'username': 'demo-bot',
+    'icon_emoji': ':derelict_house_building:'}
+
+response = requests.post(
+    webhook_url, data=json.dumps(slack_data),
+    headers={'Content-Type': 'application/json'}
+)
+
+if response.status_code != 200:
+    raise ValueError(
+        'Request to slack returned an error %s, the response is:\n%s'
+        % (response.status_code, response.text)
+    )
+
+
+
