@@ -69,14 +69,10 @@ for i in active_subscribers:
         pass
 
 # store some basic usage metrics and log em to slack every dayh
-daily_counts = "{} demo alerts sent & {} active subscribers".format(alerts_sent, len(active_subscribers))
-print(daily_counts)
+daily_msg = "Sending demolition alerts via SMS...\nNumber of active subscribers: *{}* \nNumber of alerts sent today: *{}*".format(len(active_subscribers), alerts_sent)
 
 webhook_url = os.environ['SLACK_WEBHOOK_URL']
-slack_data = {
-    'text': daily_counts, 
-    'username': 'demo-bot',
-    'icon_emoji': ':derelict_house_building:'}
+slack_data = {'text': daily_msg}
 
 response = requests.post(
     webhook_url, data=json.dumps(slack_data),
@@ -88,6 +84,3 @@ if response.status_code != 200:
         'Request to slack returned an error %s, the response is:\n%s'
         % (response.status_code, response.text)
     )
-
-
-
