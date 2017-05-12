@@ -1,11 +1,14 @@
-from smartsheet import Smartsheet
 import os
+import sqlite3
 import geocoder
+from smartsheet import Smartsheet
+from datetime import datetime
 
 smartsheet = Smartsheet(os.environ['SMARTSHEET_API_TOKEN'])
 subscriber_sheet_id = 6624424314070916
 SS = smartsheet.Sheets.get_sheet(subscriber_sheet_id)
 COLS = { c.title: (c.index, c.id) for c in SS.columns }
+
 gc = geocoder.Geocoder()
 
 class Contact(object):
@@ -20,37 +23,28 @@ class Contact(object):
                 self.addresses.append((r.cells[COLS['Matched Address'][0]].value, r))
 
     def watch(self, address):
-        """Add a new row/reactivate subscription? to the smartsheet"""
-        # add new row
+        """Add a new row to the sqlite subscribers table"""
         geo = gc.geocode(address)
         location = (round(geo['location']['x'], 5), round(geo['location']['y'], 5))
 
-        new_row = smartsheet.models.Row()
-        new_row.to_top = True
+        today = datetime.now()
 
-        new_row.cells.append({
-            'column_id': COLS['Active'][1],
-            'value': True
-        })
-        new_row.cells.append({
-            'column_id': COLS['Address'][1],
-            'value': address
-        })
-        new_row.cells.append({
-            'column_id': COLS['Phone Number'][1],
-            'value': self.number
-        })
-        new_row.cells.append({
-            'column_id': COLS['LatLng'][1],
-            'value': str(location)
-        })
-        new_row.cells.append({
-            'column_id': COLS['Matched Address'][1],
-            'value': str(geo['address'][:-7])
-        })
+        # set up new subscriber info
+        new_subscriber = [(1, self.number, str(geo['address'][:-7]), str(location), str(today), None)]
+        print("New subscriber:", new_subscriber)
 
-        new_row_in_sheet = smartsheet.Sheets.add_rows(SS.id, [new_row])
-        self.addresses.append((str(geo['address'][:-7]), new_row_in_sheet.result[0]))
+        # connect to the db
+        conn = sqlite3.connect('db/test.sqlite')
+        print(conn)
+
+        c = conn.cursor()
+
+        # insert new row into the subscribers table, assumes table has been created/exists
+        c.executemany('INSERT INTO subscribers VALUES (?,?,?,?,?,?)', new_subscriber)
+
+        # commit changes and close the connection
+        conn.commit()
+        conn.close()
 
     def unwatch(self, address):
         """Deactivate a subscription from the Smartsheet"""
