@@ -52,7 +52,7 @@ class Contact(object):
         conn = sqlite3.connect('db/test.sqlite')
         c = conn.cursor()
 
-        # update any row(s) that match crrent users phone number
+        # update any row(s) that match current users phone number
         n = (self.number,)
         c.execute('UPDATE subscribers SET active=0 WHERE phone=?', n)
 

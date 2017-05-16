@@ -1,48 +1,43 @@
 import os
 import json
 import requests
+import sqlite3
 from twilio.rest import Client
 from sodapy import Socrata
-from smartsheet import Smartsheet
 from datetime import datetime, timedelta
 
-smartsheet = Smartsheet(os.environ['SMARTSHEET_API_TOKEN'])
-subscriber_sheet_id = 6624424314070916
-SS = smartsheet.Sheets.get_sheet(subscriber_sheet_id)
-COLS = { c.title: (c.index, c.id) for c in SS.columns }
-
-soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
-
 client = Client(os.environ['TWILIO_ACCT_SID'], os.environ['TWILIO_AUTH_TOKEN'])
+soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
 
 # declare a simple counter variable
 alerts_sent = 0
 
-# make a list of active subscribers, where each element is a dict with subscriber address, lat, lng, phone and list of demos nearby
+# connect to the db
+conn = sqlite3.connect('db/test.sqlite')
+c = conn.cursor()
+
+# make a list of active subscribers
 active_subscribers = []
-for r in SS.rows:
-    if r.cells[COLS['Active'][0]].value == True:
-        subscriber = {
-            "address": r.cells[COLS['Matched Address'][0]].display_value,
-            "lng": r.cells[COLS['LatLng'][0]].display_value.strip("()")[:-10],
-            "lat": r.cells[COLS['LatLng'][0]].display_value.strip("()")[11:],
-            "phone": r.cells[COLS['Phone Number'][0]].display_value,
-            "demos_nearby": []
-        }
-        active_subscribers.append(subscriber)
+for row in c.execute('SELECT * FROM subscribers WHERE active=1').fetchall():
+    subscriber = {
+        "phone": row[1],
+        "address": row[2],
+        "lng": row[3].strip("()")[:-10],
+        "lat": row[3].strip("()")[11:],
+        "demos_nearby": []
+    }
+    active_subscribers.append(subscriber)
 
 # calculate three days from now
 today = datetime.now()
 three_days = today + timedelta(days=3)
 three_days_str = three_days.strftime('%Y-%m-%d')
 
-# find demos nearby active subscribers addresses scheduled for knock-down in the next three days
+# find demos nearby active subscribers addresses scheduled for demo in the next three days
 for i in active_subscribers:
     # query socrata, populate subscriber[demos_nearby] with result
     demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
-    
     i['demos_nearby'].extend(demos)
-    # print(i['demos_nearby'])
 
     # if an active subscriber is near demos, send them an alert
     if len(i['demos_nearby']) > 0:
@@ -54,22 +49,27 @@ for i in active_subscribers:
 
         # setup the message 
         send_to = "+1" + i['phone']
-        send_body = "Notice: Demolitions scheduled near {}: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'REMOVE' to unsubscribe.".format(i['address'], (";\n").join(list_demos))
+        send_body = "NOTICE: Demolitions scheduled near {}: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'REMOVE' to unsubscribe.".format(i['address'], (";\n").join(list_demos))
 
         # send the alert, increment our count
         message = client.messages.create(to=send_to,from_="+13132283610",body=send_body)
         alerts_sent += 1
-       
-        # todo: write this back to smartsheet record as confirmation alert was sent?
-        # message sids are unique ids we can later map to our message logs
-        print(message.sid)
+
+        # write todays date back to our db
+        c.execute('UPDATE subscribers SET last_alert_date=? WHERE phone=? and matched_address=?', (today, i['phone'], i['address']))
+        conn.commit()
     
     # don't send anything if no demos nearby
     else:
         pass
 
-# store some basic usage metrics and log em to slack every dayh
-daily_msg = "Sending demolition alerts via SMS...\nNumber of active subscribers: *{}* \nNumber of alerts sent today: *{}*".format(len(active_subscribers), alerts_sent)
+# close the db connection
+conn.close()
+
+print("Sent {} alerts".format(alerts_sent))
+
+# log some daily metrics to Slack
+daily_msg = "Delivered demolition alerts :pager: \nNumber of active subscribers: *{}* \nNumber of alerts sent today: *{}*".format(len(active_subscribers), alerts_sent)
 
 webhook_url = os.environ['SLACK_WEBHOOK_URL']
 slack_data = {'text': daily_msg}
