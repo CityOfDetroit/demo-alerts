@@ -13,7 +13,7 @@ soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ
 alerts_sent = 0
 
 # connect to the db
-conn = sqlite3.connect('db/test.sqlite')
+conn = sqlite3.connect('db/sample.sqlite')
 c = conn.cursor()
 
 # make a list of active subscribers

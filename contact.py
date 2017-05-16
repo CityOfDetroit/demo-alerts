@@ -12,7 +12,7 @@ class Contact(object):
         self.addresses = []
 
         # connect to the db
-        conn = sqlite3.connect('db/test.sqlite')
+        conn = sqlite3.connect('db/sample.sqlite')
         c = conn.cursor()
 
         # check if current user is actively subscribed to any addresses
@@ -23,33 +23,39 @@ class Contact(object):
         conn.close()
 
     def watch(self, address):
-        """Add a new row to the sqlite subscribers table"""
-        # @todo check if this phone address combo exists and update row instead of insert new
-        
+        """Add a new subscription or activate an existing one"""     
         geo = gc.geocode(address)
         location = (round(geo['location']['x'], 5), round(geo['location']['y'], 5))
 
         today = datetime.now()
 
-        # set up new subscriber info
-        new_subscriber = [(1, self.number, str(geo['address'][:-7]), str(location), str(today), None)]
-
         # connect to the db
-        conn = sqlite3.connect('db/test.sqlite')
+        conn = sqlite3.connect('db/sample.sqlite')
         c = conn.cursor()
 
-        # insert new row into the subscribers table, assumes table has been created/exists
-        c.executemany('INSERT INTO subscribers VALUES (?,?,?,?,?,?)', new_subscriber)
+        # check if this phone/address combo exists
+        subscriptions = []
+        for row in c.execute('SELECT * FROM subscribers WHERE phone=? and matched_address=?', (self.number, str(geo['address'][:-7]))).fetchall():
+            subscriptions.append(row)
 
-        # commit changes and close the connection
-        conn.commit()
+        # add a new row or update existing row
+        if len(subscriptions) < 1:
+            new_subscriber = (1, self.number, str(geo['address'][:-7]), str(location), str(today), None)
+            c.execute('INSERT INTO subscribers VALUES (?,?,?,?,?,?)', new_subscriber)
+            conn.commit()
+        
+        else:
+            c.execute('UPDATE subscribers SET active=1 WHERE phone=? AND matched_address=?', (self.number, str(geo['address'][:-7])))
+            conn.commit()
+
+        # close the connection
         conn.close()
 
         print("{} subscribed to {}".format(self.number, str(geo['address'][:-7])))
 
     def unwatch(self, address):
         """Deactivate a subscription"""
-        conn = sqlite3.connect('db/test.sqlite')
+        conn = sqlite3.connect('db/sample.sqlite')
         c = conn.cursor()
 
         # update any row(s) that match current users phone number
