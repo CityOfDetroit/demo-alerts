@@ -71,6 +71,23 @@ def initial():
             default_msg = message.DefaultMsg().make_msg()
             resp.message(default_msg)
 
+            # send it to Slack
+            webhook_url = os.environ['SLACK_WEBHOOK_URL']
+
+            err_msg = ":exclamation: demo-alerts can't geocode `{}` from `{}`".format(body, incoming_number)
+            slack_data = {'text': err_msg}
+
+            response = requests.post(
+                webhook_url, data=json.dumps(slack_data),
+                headers={'Content-Type': 'application/json'}
+            )
+
+            if response.status_code != 200:
+                raise ValueError(
+                    'Request to slack returned an error %s, the response is:\n%s'
+                    % (response.status_code, response.text)
+                )
+
     # send the text 
     return str(resp)
 
