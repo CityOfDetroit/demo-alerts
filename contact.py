@@ -51,8 +51,6 @@ class Contact(object):
         # close the connection
         conn.close()
 
-        print("{} subscribed to {}".format(self.number, str(geo['address'][:-7])))
-
     def unwatch(self, address):
         """Deactivate a subscription"""
         conn = sqlite3.connect('db/sample.sqlite')
@@ -64,5 +62,3 @@ class Contact(object):
 
         conn.commit()
         conn.close()
-
-        print("{} unsubscribed from {} address(es)".format(self.number, len(self.addresses)))

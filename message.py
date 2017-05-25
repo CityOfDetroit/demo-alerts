@@ -82,7 +82,7 @@ class HealthMsg(object):
 
     def make_msg(self):
         """" Get additional info from the Health Department """
-        return "Most old houses have lead paint, so there might be lead in demo dust. Learn more about lead from the Detroit Health Department at www.detroitmi.gov/leadsafe or (313) 876-4000."
+        return "Most old houses have lead paint, so there might be lead in demo dust. Learn more from the Health Department at www.detroitmi.gov/leadsafe or (313) 876-4000."
 
 class DefaultMsg(object):
     def __init__(self):

@@ -32,6 +32,8 @@ def initial():
         health_msg = message.HealthMsg().make_msg()
         resp.message(health_msg)
 
+        print("{} texted HEALTH".format(incoming_number))
+
     elif body.upper().strip() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
         
@@ -41,6 +43,8 @@ def initial():
 
         # remove from users so we grab a 'fresh' copy of the user with sheet rows
         del users[incoming_number]
+
+        print("{} subscribed to {}".format(incoming_number, caller.last_requested_address))
    
     elif body.upper().strip() == 'REMOVE':
         for address in caller.addresses:
@@ -50,13 +54,15 @@ def initial():
         remove_msg = msg.make_msg()
         resp.message(remove_msg)
 
+        print("{} unsubscribed from {} addresses".format(incoming_number, len(caller.addresses)))
+
     else:
         # send it to the geocoder
         located = Geocoder().geocode(body)
 
         # if it's a valid address, build up a text message with demos nearby
         if located:
-            print("Geocode match:", located['address'])
+            print("Geocoded {} from {}".format(located['address'], incoming_number))
             
             msg = message.DemoMsg(located)
             demo_msg = msg.make_msg()
@@ -70,6 +76,8 @@ def initial():
         else:
             default_msg = message.DefaultMsg().make_msg()
             resp.message(default_msg)
+
+            print("Couldn't geocode '{}' from {}; Sent it to Slack".format(body, incoming_number))
 
             # send it to Slack
             webhook_url = os.environ['SLACK_WEBHOOK_URL']
