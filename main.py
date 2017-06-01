@@ -1,6 +1,7 @@
+import os, requests, json, urllib
 from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
-import os, requests, json, urllib
+from twilio.twiml.voice_response import VoiceResponse
 from geocoder import Geocoder
 import contact
 import message
@@ -9,9 +10,9 @@ app = Flask(__name__)
 
 users = {}
 
-@app.route("/", methods=['GET', 'POST'])
-def initial():
-    """Respond to incoming calls with a simple text message."""
+@app.route("/text", methods=['GET', 'POST'])
+def text():
+    """Respond to incoming texts with a message."""
 
     # define the twilio response, ref https://twilio.github.io/twilio-python/6.0.0/twiml/messaging_response.m.html
     resp = MessagingResponse()
@@ -97,6 +98,15 @@ def initial():
                 )
 
     # send the text 
+    return str(resp)
+
+@app.route("/voice", methods=['GET', 'POST'])
+def voice():
+    """Respond to incoming calls with a recording"""
+
+    resp = VoiceResponse()
+    resp.play("http://detroit-iet.neocities.org/demo-alerts-intro.mp3")
+
     return str(resp)
 
 if __name__ == "__main__":
