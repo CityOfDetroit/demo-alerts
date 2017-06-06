@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 users = {}
 
-@app.route("/text", methods=['GET', 'POST'])
+@app.route("/", methods=['GET', 'POST'])
 def text():
     """Respond to incoming texts with a message."""
 
@@ -105,7 +105,7 @@ def voice():
     """Respond to incoming calls with a recording"""
 
     resp = VoiceResponse()
-    resp.play("http://detroit-iet.neocities.org/demo-alerts-intro.mp3")
+    resp.play("https://detroit-iet.neocities.org/demo-alerts-intro.mp3")
 
     return str(resp)
 
