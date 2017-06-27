@@ -36,7 +36,7 @@ three_days_str = three_days.strftime('%Y-%m-%d')
 # find demos nearby active subscribers addresses scheduled for demo in the next three days
 for i in active_subscribers:
     # query socrata, populate subscriber[demos_nearby] with result
-    demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
+    demos = soda_client.get("tsqq-qtet", where="demolish_by_date='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
     i['demos_nearby'].extend(demos)
 
     # if an active subscriber is near demos, send them an alert
