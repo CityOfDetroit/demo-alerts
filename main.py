@@ -5,6 +5,9 @@ from twilio.twiml.voice_response import VoiceResponse
 from geocoder import Geocoder
 import contact
 import message
+from sodapy import Socrata
+
+soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
 
 app = Flask(__name__)
 
@@ -41,10 +44,19 @@ def text():
 
         print("{} requested a call from a Health Educator".format(incoming_number))
 
-        # send the request to Slack, ping specific users
+        # calculate demos near last requested address to generate short report for Health Dept
+        located = Geocoder().geocode(caller.last_requested_address)
+
+        # query Socrata datasets
+        scheduled_demos = soda_client.get("tsqq-qtet", where="within_circle(location, {}, {}, 155)".format(located['location']['y'], located['location']['x']))
+        pipeline_demos = soda_client.get("dyp9-69zf", where="within_circle(location, {}, {}, 155)".format(located['location']['y'], located['location']['x']))
+        past_demos = soda_client.get("rv44-e9di", where="within_circle(location, {}, {}, 155)".format(located['location']['y'], located['location']['x']))
+        upcoming_demos = scheduled_demos + pipeline_demos
+
+        # send request to Slack, pinging specific users
         webhook_url = os.environ['SLACK_WEBHOOK_URL']
 
-        caller_msg = ":phone: `{}` requested a call from a Health Educator <@jessica>. \nLast address texted: *{}* \nDemos nearby: *{}*".format(incoming_number, caller.last_requested_address, 'TBD')
+        caller_msg = ":phone: `{}` requested a call from a Health Educator <@jessica> \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}*".format(incoming_number, caller.last_requested_address, len(upcoming_demos), len(past_demos))
         slack_data = {'text': caller_msg}
 
         response = requests.post(
@@ -57,7 +69,6 @@ def text():
                 'Request to slack returned an error %s, the response is:\n%s'
                 % (response.status_code, response.text)
             )
-
 
     elif body.upper().strip() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)

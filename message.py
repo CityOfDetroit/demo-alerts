@@ -10,8 +10,8 @@ language = {
     'dhd': "To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more.",
     'add': "Text 'ADD' for alerts near here.",
     'remove': "Text 'REMOVE' to unsubscribe.",
-    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women and parents of young children living near demos can connect with a City Health Educator by texting 'EDU'.",
-    'edu': "Thanks! Your phone number has been sent to the Detroit Health Department and you'll receive a call soon.",
+    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women and parents of young children living near demos can talk with a Health Educator by texting 'EDU'.",
+    'edu': "Your phone number has been sent to the Detroit Health Dept and you'll receive a call soon. Text a street address to search again.",
     'default': "To find houses planned for demolition nearby, please text a street address (eg '2 Woodward')."
 }
 
@@ -94,6 +94,7 @@ class HealthMsg(object):
     def make_msg(self):
         """" Get additional info from the Health Department """
         return language['health']
+
 class CallMsg(object):
     def __init__(self):
         pass
