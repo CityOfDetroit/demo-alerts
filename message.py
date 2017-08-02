@@ -4,6 +4,17 @@ from sodapy import Socrata
 
 soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
 
+# define static text messages
+language = {
+    'dlba': "\nDates may change.",
+    'dhd': "To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more.",
+    'add': "Text 'ADD' for alerts near here.",
+    'remove': "Text 'REMOVE' to unsubscribe.",
+    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women and parents of young children living near demos can connect with a City Health Educator by texting 'EDU'.",
+    'edu': "Thanks! Your phone number has been sent to the Detroit Health Department and you'll receive a call soon.",
+    'default': "To find houses planned for demolition nearby, please text a street address (eg '2 Woodward')."
+}
+
 class DemoMsg(object):
     def __init__(self, locatedAddress):
         self.addr = locatedAddress
@@ -49,16 +60,16 @@ class DemoMsg(object):
 
         # build the text msgs
         if len(demos_soon) > 0 and len(full_pipeline) < 1:
-            return "Demolitions are scheduled near {} this week: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'ADD' for alerts near here.".format(self.addr['address'][:-7], (";\n").join(list_demos_soon))
+            return "Demolitions are scheduled near {} this week: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), language['dlba'], language['dhd'], language['add'])
 
         elif len(full_pipeline) > 0 and len(demos_soon) < 1:
-            return "Demolitions are planned near {} soon: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'ADD' for alerts near here.".format(self.addr['address'][:-7], (";\n").join(full_pipeline))
+            return "Demolitions are planned near {} soon: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(full_pipeline), language['dlba'], language['dhd'], language['add'])
 
         elif len(demos_soon) > 0 and len(full_pipeline) > 0:
-            return "Demolitions are scheduled near {} this week: \n{}. \nMore houses nearby will be demolished soon: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'ADD' for alerts near here.".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline))
+            return "Demolitions are scheduled near {} this week: \n{}. \nMore houses nearby will be demolished soon: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline), language['dlba'], language['dhd'], language['add'])
 
         else: 
-            return "No demolitions planned near {}. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'ADD' for alerts near here.".format(self.addr['address'][:-7])
+            return "No demolitions planned near {}. {} {}".format(self.addr['address'][:-7], language['dhd'], language['add'])
 
 class SubscribeMsg(object):
     def __init__(self, lastRequestedAddress):
@@ -66,7 +77,7 @@ class SubscribeMsg(object):
 
     def make_msg(self):
         """ Confirm subscription to the address you last texted """
-        return "You've subscribed to alerts near {}. Alerts will be sent 3 days before demos within 500ft. Text 'REMOVE' to unsubscribe.".format(self.addr)
+        return "You've subscribed to alerts near {}. Alerts will be sent 3 days before demos within 500ft (about 1.5 blocks). {}".format(self.addr, language['remove'])
 
 class UnsubscribeMsg(object):
     def __init__(self, activeAddresses):
@@ -82,7 +93,13 @@ class HealthMsg(object):
 
     def make_msg(self):
         """" Get additional info from the Health Department """
-        return "Most old houses have lead paint, so there might be lead in demo dust. Learn more from the Health Department at www.detroitmi.gov/leadsafe or (313) 876-4000."
+        return language['health']
+class CallMsg(object):
+    def __init__(self):
+        pass
+
+    def make_msg(self):
+        return language['edu']
 
 class DefaultMsg(object):
     def __init__(self):
@@ -90,4 +107,4 @@ class DefaultMsg(object):
 
     def make_msg(self):
         """ Default message for anything you send us besides HEALTH, ADD, REMOVE or a valid address """
-        return "To find houses planned for demolition nearby, please text a street address (eg '2 Woodward')."
+        return language['default']

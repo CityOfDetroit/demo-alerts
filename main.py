@@ -35,6 +35,30 @@ def text():
 
         print("{} texted HEALTH".format(incoming_number))
 
+    elif body.upper().strip() == 'EDU':
+        call_msg = message.CallMsg().make_msg()
+        resp.message(call_msg)
+
+        print("{} requested a call from a Health Educator".format(incoming_number))
+
+        # send the request to Slack, ping specific users
+        webhook_url = os.environ['SLACK_WEBHOOK_URL']
+
+        caller_msg = ":phone: `{}` requested a call from a Health Educator <@jessica>. \nLast address texted: *{}* \nDemos nearby: *{}*".format(incoming_number, caller.last_requested_address, 'TBD')
+        slack_data = {'text': caller_msg}
+
+        response = requests.post(
+            webhook_url, data=json.dumps(slack_data),
+            headers={'Content-Type': 'application/json'}
+        )
+
+        if response.status_code != 200:
+            raise ValueError(
+                'Request to slack returned an error %s, the response is:\n%s'
+                % (response.status_code, response.text)
+            )
+
+
     elif body.upper().strip() == 'ADD' and caller.last_requested_address:
         caller.watch(caller.last_requested_address)
         
