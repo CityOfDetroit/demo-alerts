@@ -3,6 +3,7 @@ from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import VoiceResponse
 from geocoder import Geocoder
+from datetime import datetime
 import contact
 import message
 from sodapy import Socrata
@@ -53,10 +54,19 @@ def text():
         past_demos = soda_client.get("rv44-e9di", where="within_circle(location, {}, {}, 155)".format(located['location']['y'], located['location']['x']))
         upcoming_demos = scheduled_demos + pipeline_demos
 
+        demo_dates = []
+        if len(scheduled_demos) > 0:
+            for d in scheduled_demos:
+                demo_date = "{}".format(datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
+                demo_dates.append(demo_date)
+        else:
+            demo_date = None
+            demo_dates.append(demo_date)
+
         # send request to Slack, pinging specific users
         webhook_url = os.environ['SLACK_WEBHOOK_URL']
 
-        caller_msg = ":phone: `{}` requested a call from a Health Educator <@jessica> \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}*".format(incoming_number, caller.last_requested_address, len(upcoming_demos), len(past_demos))
+        caller_msg = ":phone: `{}` requested a call from a Health Educator <@jessica> \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}* \nNext knock-down date: *{}*".format(incoming_number, caller.last_requested_address, len(upcoming_demos), len(past_demos), demo_dates[0])
         slack_data = {'text': caller_msg}
 
         response = requests.post(
