@@ -66,7 +66,7 @@ def text():
         # send request to Slack, pinging specific users
         webhook_url = os.environ['SLACK_WEBHOOK_URL']
 
-        caller_msg = ":phone: `{}` requested a call from a Health Educator <@jessica> \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}* \nNext knock-down date: *{}*".format(incoming_number, caller.last_requested_address, len(upcoming_demos), len(past_demos), demo_dates[0])
+        caller_msg = ":phone: `{}` requested a call from a Health Educator \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}* \nNext knock-down date: *{}*".format(incoming_number, caller.last_requested_address, len(upcoming_demos), len(past_demos), demo_dates[0])
         slack_data = {'text': caller_msg}
 
         response = requests.post(
