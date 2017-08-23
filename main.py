@@ -45,8 +45,17 @@ def text():
 
         print("{} requested a call from a Health Educator".format(incoming_number))
 
+        # checks if a user is texting after requesting an address, or after receiving an alert (eg no last_requested_address)
+        if incoming_number in users.keys():
+            caller = users[incoming_number]
+            edu_addr = caller.last_requested_address
+        else:
+            # @todo figure out how to get most recently subscribed to address, not just first in list
+            caller = contact.Contact(incoming_number)
+            edu_addr = [a[0] for a in caller.addresses][0]
+
         # calculate demos near last requested address to generate short report for Health Dept
-        located = Geocoder().geocode(caller.last_requested_address)
+        located = Geocoder().geocode(edu_addr)
 
         # query Socrata datasets
         scheduled_demos = soda_client.get("tsqq-qtet", where="within_circle(location, {}, {}, 155)".format(located['location']['y'], located['location']['x']))
@@ -66,7 +75,7 @@ def text():
         # send request to Slack, pinging specific users
         webhook_url = os.environ['SLACK_WEBHOOK_URL']
 
-        caller_msg = ":phone: `{}` requested a call from a Health Educator \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}* \nNext knock-down date: *{}*".format(incoming_number, caller.last_requested_address, len(upcoming_demos), len(past_demos), demo_dates[0])
+        caller_msg = ":phone: `{}` requested a call from a Health Educator \nLast address texted: *{}* \nNumber of upcoming demos: *{}* \nNumber of past demos: *{}* \nNext knock-down date: *{}*".format(incoming_number, edu_addr, len(upcoming_demos), len(past_demos), demo_dates[0])
         slack_data = {'text': caller_msg}
 
         response = requests.post(
