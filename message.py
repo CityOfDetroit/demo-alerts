@@ -7,12 +7,12 @@ soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ
 # define static text messages
 language = {
     'dlba': "\nDates may change.",
-    'dhd': "To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more.",
+    'dhd': "To help protect your family during demos: \n- Keep children & pets inside \n- Close windows & doors. \nText 'HEALTH' to learn more.",
     'add': "Text 'ADD' for alerts near here.",
     'remove': "Text 'REMOVE' to unsubscribe.",
-    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women and parents of young children living near demos can talk with a Health Educator by texting 'EDU'.",
-    'edu': "Your phone number has been sent to the Detroit Health Dept and you'll receive a call soon. Text a street address to search again.",
-    'default': "To find houses planned for demolition nearby, please text a street address (eg '2 Woodward')."
+    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women & parents of young children living near demos can talk with a Health Educator by texting 'EDU'.",
+    'edu': "Your phone number has been sent to the Detroit Health Dept & you'll receive a call soon. Text an address to search again.",
+    'default': "To find houses planned for demolition nearby, please text a street address (eg '1250 E Grand' or '2 Woodward')."
 }
 
 class DemoMsg(object):
@@ -77,7 +77,7 @@ class SubscribeMsg(object):
 
     def make_msg(self):
         """ Confirm subscription to the address you last texted """
-        return "You've subscribed to alerts near {}. Alerts will be sent 3 days before demos within 500ft (about 1.5 blocks). {}".format(self.addr, language['remove'])
+        return "You've subscribed to alerts near {}. Alerts are sent 3 days before demos within 500ft. {}".format(self.addr, language['remove'])
 
 class UnsubscribeMsg(object):
     def __init__(self, activeAddresses):
@@ -85,7 +85,7 @@ class UnsubscribeMsg(object):
 
     def make_msg(self):
         """ Unsubscribe from all active addresses """
-        return "You're unsubscribed to alerts near: \n{}. \nText a street address to find demolitions nearby or to re-subscribe.".format((";\n").join(self.addrs))
+        return "You're unsubscribed to alerts near: \n{}. \nText an address to find demos nearby or to re-subscribe.".format((";\n").join(self.addrs))
 
 class HealthMsg(object):
     def __init__(self):
@@ -100,6 +100,7 @@ class CallMsg(object):
         pass
 
     def make_msg(self):
+        """ Request a call from a Health Educator """
         return language['edu']
 
 class DefaultMsg(object):
