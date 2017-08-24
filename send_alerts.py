@@ -49,10 +49,10 @@ for i in active_subscribers:
 
         # setup the message 
         send_to = "+1" + i['phone']
-        send_body = "NOTICE: Demolitions scheduled near {}: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children and pets inside \n- Close windows and doors. \nText 'HEALTH' to learn more. Text 'REMOVE' to unsubscribe.".format(i['address'], (";\n").join(list_demos))
+        send_body = "NOTICE: Demolitions scheduled near {}: \n{}. \nDates may change. To help protect your family during demos: \n- Keep children & pets inside \n- Close windows & doors. \nText 'HEALTH' to learn more. Text 'REMOVE' to unsubscribe.".format(i['address'], (";\n").join(list_demos))
 
         # send the alert, increment our count
-        message = client.messages.create(to=send_to,from_="+13132283610",body=send_body)
+        message = client.messages.create(to=send_to,from_="+13132543366",body=send_body)
         alerts_sent += 1
 
         # write todays date back to our db
