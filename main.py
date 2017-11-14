@@ -14,11 +14,12 @@ app = Flask(__name__)
 
 users = {}
 
+# accept common misspellings of keywords
 keywords = {
-    'Add': ["ADD", "'ADD'", "AD", "ADDD"],
-    'Remove': ["REMOVE", "'REMOVE'", "REMOV", "REMOVEE"],
-    'Health': ["HEALTH", "'HEALTH'", "HEALT", "HEALTHH"],
-    'Edu': ["EDU", "'EDU'", "ED", "EDUU", "EDUC"]
+    'Add': ["ADD", "'ADD'", "AD", "ADDD", "A", "ASD", "SDD"],
+    'Remove': ["REMOVE", "'REMOVE'", "REMOV", "REMOVEE", "R", "ERMOVE", "REMOEV"],
+    'Health': ["HEALTH", "'HEALTH'", "HEALT", "HEALTHH", "H", "HRALTH", "HEALHT", "EHALTH", "HAELTH", "NEALTH"],
+    'Edu': ["EDU", "'EDU'", "ED", "EDUU", "EDUC", "E" "DEU", "EEU"]
 }
 
 @app.route("/", methods=['GET', 'POST'])
@@ -65,7 +66,7 @@ def text():
         past_demos = soda_client.get("rv44-e9di", where="within_circle(location, {}, {}, 155)".format(located['location']['y'], located['location']['x']))
         upcoming_demos = scheduled_demos + pipeline_demos
 
-        # format em
+        # format 'em
         demo_dates = []
         if len(scheduled_demos) > 0:
             for d in scheduled_demos:

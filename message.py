@@ -12,7 +12,7 @@ language = {
     'remove': "Text 'REMOVE' to unsubscribe.",
     'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women & parents of young children living near demos can talk with a Health Educator by texting 'EDU'.",
     'edu': "Your phone number has been sent to the Detroit Health Dept & you'll receive a call soon. Text an address to search again.",
-    'default': "To find houses planned for demolition nearby, please text a street address (eg '1250 E Grand' or '2 Woodward')."
+    'default': "Sorry we can't process that! To find houses planned for demolition nearby, please text a street address (eg '9385 E Vernor' or '2 Woodward')."
 }
 
 class DemoMsg(object):

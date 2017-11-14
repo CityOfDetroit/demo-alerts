@@ -1,12 +1,14 @@
 # demo-alerts
 
-Let's send a text message to people when there's going to be a demolition near their house.
+Let's help people find houses nearby that are planned to be demolished and share health tips via SMS.
 
-Try it out by texting a street address in Detroit to 313-254-DEMO (aka 313-254-3366).
+Try it by texting a street address in Detroit to 313-254-DEMO (aka 313-254-3366). A street address should look like "9385 E Vernor" or "2 Woodward", no need to include the city, state or zip code.
 
-We locate the address you send us against our ESRI Composite Geocode and then populate the text response by querying two datasets on our Open Data Portal:
-- [Upcoming Demolitions](https://data.detroitmi.gov/Government/Upcoming-Detroit-Demolitions/tsqq-qtet): Properties with a contractor and scheduled knock-down date
-- [Demolition Pipeline](https://data.detroitmi.gov/Property-Parcels/Demolition_Pipeline/dyp9-69zf): Properties with a completed asbestos abatement survey and projected for demo within the year
+We locate the address you send us against our geocoder and then populate the text response by querying two datasets on our Open Data Portal:
+- [Upcoming Demolitions](https://data.detroitmi.gov/resource/tsqq-qtet): Properties with a contractor and scheduled knock-down date
+- [Demolition Pipeline](https://data.detroitmi.gov/resource/dyp9-69zf): Properties with a completed asbestos abatement survey and projected for demo within the year
+
+We'll text you back with information about whether or not nearby houses are planned for demolition. "Nearby" is within 500ft, or about 1.5 blocks. You can opt-into notifications three days before houses nearby are scheduled to be knocked down.
 
 If you call this number, we'll play back an instructional voice recording.
 
