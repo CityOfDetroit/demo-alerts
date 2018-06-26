@@ -39,7 +39,7 @@ class DemoMsg(object):
         list_demos_soon = []
         if len(demos_soon) > 0:
             for d in demos_soon:
-                formatted_demo_soon = "{} on {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
+                formatted_demo_soon = "{} the week of {}".format(d['address'], datetime.strptime((d['demolish_by_date']), '%Y-%m-%dT%H:%M:%S').strftime('%m-%d-%Y'))
                 list_demos_soon.append(formatted_demo_soon)
 
         list_demos_nearby = []
@@ -60,13 +60,13 @@ class DemoMsg(object):
 
         # build the text msgs
         if len(demos_soon) > 0 and len(full_pipeline) < 1:
-            return "Demolitions are scheduled near {} this week: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), language['dlba'], language['dhd'], language['add'])
+            return "Demolitions are scheduled near {}: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), language['dlba'], language['dhd'], language['add'])
 
         elif len(full_pipeline) > 0 and len(demos_soon) < 1:
             return "Demolitions are planned near {} soon: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(full_pipeline), language['dlba'], language['dhd'], language['add'])
 
         elif len(demos_soon) > 0 and len(full_pipeline) > 0:
-            return "Demolitions are scheduled near {} this week: \n{}. \nMore houses nearby will be demolished soon: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline), language['dlba'], language['dhd'], language['add'])
+            return "Demolitions are scheduled near {}: \n{}. \nMore houses nearby will be demolished soon: \n{}. {} {} {}".format(self.addr['address'][:-7], (";\n").join(list_demos_soon), (";\n").join(full_pipeline), language['dlba'], language['dhd'], language['add'])
 
         else: 
             return "No demolitions planned near {}. {} {}".format(self.addr['address'][:-7], language['dhd'], language['add'])
