@@ -218,4 +218,6 @@ def voice():
     return str(resp)
 
 if __name__ == "__main__":
+    print("demo-alerts starting up.")
+    myLogger.emit(logging.INFO, "demo-alerts starting up", {})
     app.run(debug=True)

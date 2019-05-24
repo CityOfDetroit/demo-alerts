@@ -100,6 +100,3 @@ class Log:
             self.logger.error(message)
         elif level == logging.CRITICAL:
             self.logger.critical(message)
-
-lgr = Log("myLogger")
-lgr.emit(20, "test", {})
