@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 users = {}
 
-logger = Log("main")
+myLogger = Log("main")
 
 # accept common misspellings of keywords
 keywords = {
@@ -47,14 +47,14 @@ def text():
         resp.message(health_msg)
 
         print("{} texted HEALTH".format(incoming_number))
-        logger.emit(logging.INFO, "HEALTH texted", request.values)
+        myLogger.emit(logging.INFO, "HEALTH texted", request.values)
 
     elif b in keywords['Edu']:
         call_msg = message.CallMsg().make_msg()
         resp.message(call_msg)
 
         print("{} requested a call from a Health Educator".format(incoming_number))
-        logger.emit(logging.INFO, "Health Educator call requested", request.values)
+        myLogger.emit(logging.INFO, "Health Educator call requested", request.values)
 
         # get users last requested address or the address they're subscribed to
         if incoming_number in users.keys():
@@ -88,7 +88,7 @@ def text():
             "past_demos_count": len(past_demos),
             "next_knockdown_date": demo_dates[0]
         }
-        logger.emit(
+        myLogger.emit(
             logging.INFO,
             "Health Educator call requested.",
             request.values,
@@ -107,7 +107,7 @@ def text():
         )
 
         if response.status_code != 200:
-            logger.emit(
+            myLogger.emit(
                 logging.ERROR,
                 "Slack request failed",
                 [],
@@ -129,7 +129,7 @@ def text():
         del users[incoming_number]
 
         print("{} subscribed to {}".format(incoming_number, caller.last_requested_address))
-        logger.emit(
+        myLogger.emit(
             logging.INFO,
             "Caller subscribed to an address",
             request.values,
@@ -144,7 +144,7 @@ def text():
         resp.message(remove_msg)
 
         print("{} unsubscribed from {} addresses".format(incoming_number, len(caller.addresses)))
-        logger.emit(
+        myLogger.emit(
             logging.INFO,
             "Caller unsubscribed to a number of addresses",
             request.values,
@@ -157,7 +157,7 @@ def text():
         # if it's a valid address, build up a text message with demos nearby
         if located:
             print("Geocoded {} from {}".format(located['address'], incoming_number))
-            logger.emit(
+            myLogger.emit(
                 logging.INFO,
                 "Geocoded an address",
                 request.values,
@@ -177,7 +177,7 @@ def text():
             resp.message(default_msg)
 
             print("Couldn't geocode '{}' from {}; Sent it to Slack".format(body, incoming_number))
-            logger.emit(
+            myLogger.emit(
                 logging.ERROR,
                 "Geocoding failed",
                 request.values,
@@ -195,7 +195,7 @@ def text():
             )
 
             if response.status_code != 200:
-                logger.emit(
+                myLogger.emit(
                     logging.ERROR,
                     "Slack request failed",
                     [],
