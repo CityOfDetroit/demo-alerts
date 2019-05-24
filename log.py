@@ -77,6 +77,14 @@ class Log:
         }
     
     def emit(self, level, description, extras, **kwargs):
+        """Emits a log entry for the specified level and arguments.
+        
+        Arguments:
+            level {int} -- Logging level.
+            description {str} -- A brief description of the event.
+            extras {dict} -- A dictionary containing request parameters.
+        """
+        
         # flatten extras, remove brackets to merge them into the formatter
         extras["description"] = description
         extras.update(kwargs)
