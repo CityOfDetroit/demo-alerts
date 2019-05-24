@@ -77,10 +77,18 @@ class Log:
         }
     
     def emit(self, level, description, extras, **kwargs):
+        """Emits a log entry for the specified level and arguments.
+        
+        Arguments:
+            level {int} -- Logging level.
+            description {str} -- A brief description of the event.
+            extras {dict} -- A dictionary containing request parameters.
+        """
+        
         # flatten extras, remove brackets to merge them into the formatter
-        extras["description"] = description
-        extras.update(kwargs)
-        message = json.dumps(extras)[1:-1]
+        kwargs["description"] = description
+        kwargs.update(extras)
+        message = json.dumps(kwargs)[1:-1]
         self.handler.setFormatter(self.formatters[level])
         if level == logging.DEBUG:
             self.logger.debug(message)
@@ -92,7 +100,3 @@ class Log:
             self.logger.error(message)
         elif level == logging.CRITICAL:
             self.logger.critical(message)
-
-myLogger = Log("testLogger")
-myJson = json.loads("{\"Key\": \"Value\"}")
-myLogger.emit(logging.INFO, "This is a test message.", myJson)
