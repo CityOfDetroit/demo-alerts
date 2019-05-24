@@ -15,6 +15,7 @@ class Log:
         
         self.name = name
         self.logger = logging.getLogger(name)
+        self.logger.handlers = []
         self.logger.setLevel(logging.DEBUG)
         self.handler = logging.handlers.SysLogHandler()
         self.logger.addHandler(self.handler)
@@ -86,9 +87,12 @@ class Log:
         """
         
         # flatten extras, remove brackets to merge them into the formatter
-        kwargs["description"] = description
-        kwargs.update(extras)
-        message = json.dumps(kwargs)[1:-1]
+        flat_params = {
+            "description": description
+        }
+        flat_params.update(extras)
+        flat_params.update(kwargs)
+        message = json.dumps(flat_params)[1:-1]
         self.handler.setFormatter(self.formatters[level])
         if level == logging.DEBUG:
             self.logger.debug(message)
