@@ -1,4 +1,4 @@
-import os, requests, json, urllib
+import os, requests, json, urllib, logging
 from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import VoiceResponse
@@ -7,12 +7,15 @@ from datetime import datetime
 from sodapy import Socrata
 import contact
 import message
+from log import Log
 
 soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
 
 app = Flask(__name__)
 
 users = {}
+
+logger = Log("main")
 
 # accept common misspellings of keywords
 keywords = {
@@ -44,12 +47,14 @@ def text():
         resp.message(health_msg)
 
         print("{} texted HEALTH".format(incoming_number))
+        logger.emit(logging.INFO, "HEALTH texted", request.values)
 
     elif b in keywords['Edu']:
         call_msg = message.CallMsg().make_msg()
         resp.message(call_msg)
 
         print("{} requested a call from a Health Educator".format(incoming_number))
+        logger.emit(logging.INFO, "Health Educator call requested", request.values)
 
         # get users last requested address or the address they're subscribed to
         if incoming_number in users.keys():
@@ -75,6 +80,21 @@ def text():
         else:
             demo_date = None
             demo_dates.append(demo_date)
+        
+        # send log to Loggly
+        log_extras = {
+            "last_address_texted": edu_addr,
+            "upcoming_demos_count": len(upcoming_demos),
+            "past_demos_count": len(past_demos),
+            "next_knockdown_date": demo_dates[0]
+        }
+        logger.emit(
+            logging.INFO,
+            "Health Educator call requested.",
+            request.values,
+            last_address_texted=edu_addr,
+            upcoming_demo_count=len(upcoming_demos),
+            next_knockdown_date=demo_dates[0])
 
         # send request to Slack
         webhook_url = os.environ['SLACK_WEBHOOK_URL']
@@ -87,6 +107,12 @@ def text():
         )
 
         if response.status_code != 200:
+            logger.emit(
+                logging.ERROR,
+                "Slack request failed",
+                [],
+                status_code=response.status_code,
+                response=response.text)
             raise ValueError(
                 'Request to slack returned an error %s, the response is:\n%s'
                 % (response.status_code, response.text)
@@ -103,6 +129,11 @@ def text():
         del users[incoming_number]
 
         print("{} subscribed to {}".format(incoming_number, caller.last_requested_address))
+        logger.emit(
+            logging.INFO,
+            "Caller subscribed to an address",
+            request.values,
+            address=caller.last_requested_address)
    
     elif b in keywords['Remove']:
         for address in caller.addresses:
@@ -113,6 +144,11 @@ def text():
         resp.message(remove_msg)
 
         print("{} unsubscribed from {} addresses".format(incoming_number, len(caller.addresses)))
+        logger.emit(
+            logging.INFO,
+            "Caller unsubscribed to a number of addresses",
+            request.values,
+            address_count=len(caller.addresses))
 
     else:
         # send it to the geocoder
@@ -121,6 +157,11 @@ def text():
         # if it's a valid address, build up a text message with demos nearby
         if located:
             print("Geocoded {} from {}".format(located['address'], incoming_number))
+            logger.emit(
+                logging.INFO,
+                "Geocoded an address",
+                request.values,
+                geocode=located["address"])
             
             msg = message.DemoMsg(located)
             demo_msg = msg.make_msg()
@@ -136,6 +177,12 @@ def text():
             resp.message(default_msg)
 
             print("Couldn't geocode '{}' from {}; Sent it to Slack".format(body, incoming_number))
+            logger.emit(
+                logging.ERROR,
+                "Geocoding failed",
+                request.values,
+                from_address=body
+            )
 
             # send it to Slack
             webhook_url = os.environ['SLACK_WEBHOOK_URL']
@@ -148,6 +195,12 @@ def text():
             )
 
             if response.status_code != 200:
+                logger.emit(
+                    logging.ERROR,
+                    "Slack request failed",
+                    [],
+                    status_code=response.status_code,
+                    response=response.text)
                 raise ValueError(
                     'Request to slack returned an error %s, the response is:\n%s'
                     % (response.status_code, response.text)
