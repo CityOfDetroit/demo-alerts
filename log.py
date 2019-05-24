@@ -1,4 +1,4 @@
-import json
+import json, socket
 import logging
 from logging import LogRecord
 from logging.handlers import SysLogHandler
@@ -17,7 +17,14 @@ class Log:
         self.logger = logging.getLogger(name)
         self.logger.handlers = []
         self.logger.setLevel(logging.DEBUG)
-        self.handler = logging.handlers.SysLogHandler()
+
+        if "DESKTOP" in socket.gethostname():
+            # debug (WSL) environment, use UDP
+            self.handler = logging.handlers.SysLogHandler()
+        else:
+            # prod (box) environment, use socket
+            self.handler = logging.handlers.SysLogHandler("/dev/log")
+        
         self.logger.addHandler(self.handler)
         self._load_formatters()
     
