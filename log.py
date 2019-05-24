@@ -92,7 +92,3 @@ class Log:
             self.logger.error(message)
         elif level == logging.CRITICAL:
             self.logger.critical(message)
-
-myLogger = Log("testLogger")
-myJson = json.loads("{\"Key\": \"Value\"}")
-myLogger.emit(logging.INFO, "This is a test message.", myJson)
