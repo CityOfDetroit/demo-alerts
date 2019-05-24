@@ -10,9 +10,9 @@ language = {
     'dhd': "To help protect your family during demos: \n- Keep children & pets inside \n- Close windows & doors. \nText 'HEALTH' to learn more.",
     'add': "Text 'ADD' for alerts near here.",
     'remove': "Text 'REMOVE' to unsubscribe.",
-    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women & parents of young children living near demos can talk with a Health Educator by texting 'EDU'. Cleaning kits available for pickup at Rec Centers, learn more at https://bit.ly/2KtBx1Z",
+    'health': "Most old houses have lead paint, so there might be lead in demo dust. Pregnant women & parents of young children living near demos can talk with a Health Educator by texting 'EDU'.",
     'edu': "Your phone number has been sent to the Detroit Health Dept & you'll receive a call soon. Text an address to search again.",
-    'default': "Sorry we can't process that! To find houses planned for demolition nearby, please text a street address (eg '9385 E Vernor' or '2 Woodward')."
+    'default': "Sorry, we can't process that! Please reply with an address, like '5164 Chicago' or intersection, like 'Lyndon and Hubbell'."
 }
 
 class DemoMsg(object):
@@ -85,7 +85,7 @@ class UnsubscribeMsg(object):
 
     def make_msg(self):
         """ Unsubscribe from all active addresses """
-        return "You're unsubscribed to alerts near: \n{}. \nText an address to find demos nearby or to re-subscribe.".format((";\n").join(self.addrs))
+        return "You're unsubscribed to alerts near: \n{}. \nText an address or intersection to find demos nearby or to re-subscribe.".format((";\n").join(self.addrs))
 
 class HealthMsg(object):
     def __init__(self):

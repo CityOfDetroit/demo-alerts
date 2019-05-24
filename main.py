@@ -7,6 +7,7 @@ from datetime import datetime
 from sodapy import Socrata
 import contact
 import message
+import re
 
 soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
 
@@ -115,12 +116,19 @@ def text():
         print("{} unsubscribed from {} addresses".format(incoming_number, len(caller.addresses)))
 
     else:
+        pattern = re.compile('(\d{2,5})\s?(\w{2,})')
+        result = pattern.search(body)
+        if result:
+            send = result.group(1) + ' ' + result.group(2)
+        else:
+            send = body
+
         # send it to the geocoder
-        located = Geocoder().geocode(body)
+        located = Geocoder().geocode(send)
 
         # if it's a valid address, build up a text message with demos nearby
         if located:
-            print("Geocoded {} from {}".format(located['address'], incoming_number))
+            print("Geocoded {} (original: {}) from {}".format(located['address'], send, incoming_number))
             
             msg = message.DemoMsg(located)
             demo_msg = msg.make_msg()
@@ -135,11 +143,11 @@ def text():
             default_msg = message.DefaultMsg().make_msg()
             resp.message(default_msg)
 
-            print("Couldn't geocode '{}' from {}; Sent it to Slack".format(body, incoming_number))
+            print("Couldn't geocode '{}' from {}; Sent it to Slack".format(send, incoming_number))
 
             # send it to Slack
             webhook_url = os.environ['SLACK_WEBHOOK_URL']
-            err_msg = ":exclamation: demo-alerts can't geocode `{}` from `{}`".format(body, incoming_number)
+            err_msg = ":exclamation: demo-alerts can't geocode `{}` from `{}`".format(send, incoming_number)
             slack_data = {'text': err_msg}
 
             response = requests.post(

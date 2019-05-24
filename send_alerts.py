@@ -9,11 +9,13 @@ from datetime import datetime, timedelta
 client = Client(os.environ['TWILIO_ACCT_SID'], os.environ['TWILIO_AUTH_TOKEN'])
 soda_client = Socrata("data.detroitmi.gov", os.environ['SODA_TOKEN'], os.environ['SODA_USER'], os.environ['SODA_PASS'])
 
+webhook_url = os.environ['SLACK_WEBHOOK_URL']
+
 # declare a simple counter variable
 alerts_sent = 0
 
 # connect to the db
-conn = sqlite3.connect('db/sample.sqlite')
+conn = sqlite3.connect('/home/gisteam/demo-alerts/db/prod.sqlite')
 c = conn.cursor()
 
 # make a list of active subscribers
@@ -36,7 +38,17 @@ three_days_str = three_days.strftime('%Y-%m-%d')
 # find demos nearby active subscribers addresses scheduled for demo in the next three days
 for i in active_subscribers:
     # query socrata, populate subscriber[demos_nearby] with result
-    demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
+    try:
+        demos = soda_client.get("tsqq-qtet", where="demolish_by_date<='{}' AND within_circle(location, {}, {}, 155)".format(three_days_str, i['lat'], i['lng']))
+    except: 
+        slack_data = {'text': """Subscriber {} errored""".format(i['phone'])}
+
+        response = requests.post(
+            webhook_url, data=json.dumps(slack_data),
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        pass
     i['demos_nearby'].extend(demos)
 
     # if an active subscriber is near demos, send them an alert
@@ -71,7 +83,6 @@ print("Sent {} alerts".format(alerts_sent))
 # log some daily metrics to Slack
 daily_msg = "Delivered demolition alerts :pager: \nNumber of active subscribers: *{}* \nNumber of alerts sent today: *{}*".format(len(active_subscribers), alerts_sent)
 
-webhook_url = os.environ['SLACK_WEBHOOK_URL']
 slack_data = {'text': daily_msg}
 
 response = requests.post(

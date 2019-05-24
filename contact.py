@@ -12,7 +12,7 @@ class Contact(object):
         self.addresses = []
 
         # connect to the db
-        conn = sqlite3.connect('db/sample.sqlite')
+        conn = sqlite3.connect('db/prod.sqlite')
         c = conn.cursor()
 
         # check if current user is actively subscribed to any addresses
@@ -30,7 +30,7 @@ class Contact(object):
         today = datetime.now()
 
         # connect to the db
-        conn = sqlite3.connect('db/sample.sqlite')
+        conn = sqlite3.connect('db/prod.sqlite')
         c = conn.cursor()
 
         # check if this phone/address combo exists
@@ -53,7 +53,7 @@ class Contact(object):
 
     def unwatch(self, address):
         """Deactivate a subscription"""
-        conn = sqlite3.connect('db/sample.sqlite')
+        conn = sqlite3.connect('db/prod.sqlite')
         c = conn.cursor()
 
         # update any row(s) that match current users phone number
