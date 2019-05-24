@@ -76,9 +76,10 @@ class Log:
             )
         }
     
-    def emit(self, level, description, extras):
+    def emit(self, level, description, extras, **kwargs):
         # flatten extras, remove brackets to merge them into the formatter
         extras["description"] = description
+        extras.update(kwargs)
         message = json.dumps(extras)[1:-1]
         self.handler.setFormatter(self.formatters[level])
         if level == logging.DEBUG:
